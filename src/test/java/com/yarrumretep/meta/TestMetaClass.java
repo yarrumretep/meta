@@ -106,4 +106,30 @@ public class TestMetaClass
 		assertEquals("Should return Double", MetaClass.lookup(Double.class), mfield.getType());
 	}
 
+	@Test
+	public void testTypeVariableBounds()
+	{
+		MetaClass mclass = MetaClass.lookup(Subtype.class);
+		MetaMethod mmethod;
+
+		mmethod = mclass.getMethod("getX");
+		assertNotNull("Should have getX()", mmethod);
+		assertEquals("Should return Object", MetaClass.lookup(Object.class), mmethod.getReturnType());
+		assertEquals("Should have no args", Collections.emptyList(), mmethod.getArguments());
+
+		mmethod = mclass.getMethod("getSubtypeThing");
+		assertNotNull("Should have getSubtypeThing()", mmethod);
+		assertEquals("Should return Number", MetaClass.lookup(Number.class), mmethod.getReturnType());
+		assertEquals("Should have no args", Collections.emptyList(), mmethod.getArguments());
+
+		mmethod = mclass.getMethod("getThing");
+		assertNotNull("Should have getThing()", mmethod);
+		assertEquals("Should return Number", MetaClass.lookup(Number.class), mmethod.getReturnType());
+		assertEquals("Should have no args", Collections.emptyList(), mmethod.getArguments());
+
+		mmethod = mclass.getMethod("getList", Object.class);
+		assertNotNull("Should have getList(Object)", mmethod);
+		assertEquals("Should return List<Number>", MetaClass.lookup(List.class, Number.class), mmethod.getReturnType());
+		assertEquals("Should have args of Object", Collections.singletonList(MetaClass.lookup(Object.class)), mmethod.getArguments());
+	}
 }

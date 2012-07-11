@@ -63,12 +63,16 @@ public class MetaClass
 		this.variables = Maps.newHashMapWithExpectedSize(parameters.size());
 
 		TypeVariable<?>[] vars = clazz.getTypeParameters();
-		if (vars.length != parameters.size())
+		if (vars.length < parameters.size())
 			throw new IllegalArgumentException("Incorrect number of parameters for class " + clazz + " was " + parameters.size() + " should have been " + vars.length);
 
 		int ct = 0;
 		for (TypeVariable<?> var : vars)
-			variables.put(var, parameters.get(ct++));
+		{
+			if(ct < parameters.size())
+				variables.put(var, parameters.get(ct));
+			ct++;
+		}
 
 		this.superclass = resolver.apply(clazz.getGenericSuperclass());
 	}
@@ -92,9 +96,10 @@ public class MetaClass
 			}
 			else if (type instanceof TypeVariable<?>)
 			{
-				MetaClass result = variables.get(type);
+				TypeVariable<?> tvtype = (TypeVariable<?>)type;
+				MetaClass result = variables.get(tvtype);
 				if (result == null)
-					throw new RuntimeException("Could not resolve type variable: " + type + " in " + this);
+					result = apply(tvtype.getBounds()[0]);
 				return result;
 			}
 			else if (type instanceof ParameterizedType)
