@@ -132,4 +132,26 @@ public class TestMetaClass
 		assertEquals("Should return List<Number>", MetaClass.lookup(List.class, Number.class), mmethod.getReturnType());
 		assertEquals("Should have args of Object", Collections.singletonList(MetaClass.lookup(Object.class)), mmethod.getArguments());
 	}
+
+	@Test
+	public void testParameterizedMethod()
+	{
+		MetaClass mclass = MetaClass.lookup(Subtype.class, MetaClass.lookup(Float.class), MetaClass.lookup(List.class, String.class));
+
+		MetaMethod mmethod;
+		mmethod = mclass.getMethod("getX");
+		assertNotNull("Should have getX()", mmethod);
+		assertEquals("Should return List<String>", MetaClass.lookup(List.class, String.class), mmethod.getReturnType());
+		assertEquals("Should have no args", Collections.emptyList(), mmethod.getArguments());
+		
+		mmethod = mmethod.getReturnType().getMethod("get", int.class);
+		assertNotNull("Should have get()", mmethod);
+		assertEquals("Should return String", MetaClass.lookup(String.class), mmethod.getReturnType());
+		assertEquals("Should have int args", MetaClass.lookupAll(int.class), mmethod.getArguments());
+		
+		mmethod = mclass.getMethod("foo", Object.class);
+		assertNotNull("Should have foo()", mmethod);
+		MetaClass arg = mmethod.getArguments().get(0);
+		assertEquals("Should be List<String>", MetaClass.lookup(List.class, String.class), arg);
+	}
 }

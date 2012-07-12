@@ -18,6 +18,11 @@ public class Subtype<T extends Number, X> extends Supertype<T>
 		return Collections.emptyList();
 	}
 	
+	public <A extends X> void foo(A foo)
+	{
+		
+	}
+	
 	public T getSubtypeThing()
 	{
 		return super.getThing(); 
