@@ -18,9 +18,9 @@ public class Subtype<T extends Number, X> extends Supertype<T>
 		return Collections.emptyList();
 	}
 	
-	public <A extends X> void foo(A foo)
+	protected <A extends X> List<? extends T> foo(A foo)
 	{
-		
+		return null;
 	}
 	
 	public T getSubtypeThing()
@@ -28,7 +28,7 @@ public class Subtype<T extends Number, X> extends Supertype<T>
 		return super.getThing(); 
 	}
 	
-	public X getX()
+	protected X getX()
 	{
 		return x;
 	}

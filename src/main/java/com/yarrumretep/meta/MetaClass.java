@@ -129,7 +129,7 @@ public class MetaClass
 
 	public List<MetaClass> getInterfaces()
 	{
-		return Lists.transform(Arrays.asList(clazz.getInterfaces()), resolver);
+		return Lists.transform(Arrays.asList(clazz.getGenericInterfaces()), resolver);
 	}
 
 	public MetaClass getSuperClass()
@@ -281,6 +281,7 @@ public class MetaClass
 				if (!first)
 					builder.append(", ");
 				builder.append(mc.toString());
+				first = false;
 			}
 			builder.append(">");
 

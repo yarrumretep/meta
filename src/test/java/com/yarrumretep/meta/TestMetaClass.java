@@ -2,10 +2,12 @@ package com.yarrumretep.meta;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 
@@ -143,15 +145,65 @@ public class TestMetaClass
 		assertNotNull("Should have getX()", mmethod);
 		assertEquals("Should return List<String>", MetaClass.lookup(List.class, String.class), mmethod.getReturnType());
 		assertEquals("Should have no args", Collections.emptyList(), mmethod.getArguments());
-		
+
 		mmethod = mmethod.getReturnType().getMethod("get", int.class);
 		assertNotNull("Should have get()", mmethod);
 		assertEquals("Should return String", MetaClass.lookup(String.class), mmethod.getReturnType());
 		assertEquals("Should have int args", MetaClass.lookupAll(int.class), mmethod.getArguments());
-		
+
 		mmethod = mclass.getMethod("foo", Object.class);
 		assertNotNull("Should have foo()", mmethod);
 		MetaClass arg = mmethod.getArguments().get(0);
 		assertEquals("Should be List<String>", MetaClass.lookup(List.class, String.class), arg);
+		assertEquals("Should return List<Float>", MetaClass.lookup(List.class, Float.class), mmethod.getReturnType());
+	}
+
+	@Test
+	public void testNotFinding()
+	{
+		MetaClass mclass = MetaClass.lookup(Subtype.class, MetaClass.lookup(Float.class), MetaClass.lookup(List.class, String.class));
+		assertNull("Should have no field", mclass.getField("notThere"));
+		assertNull("Should have no method", mclass.getMethod("notThere"));
+		assertNull("Should have no method", mclass.getMethod("foo", Integer.class));
+		assertNull("Should have no method", mclass.getMethod(Scope.Static, null, "foo"));
+		assertNull("Should have no method", mclass.getMethod(Scope.Instance, Visibility.Private, "foo"));
+		assertNull("Should have no method", mclass.getMethod(Scope.Instance, Visibility.Protected, "foo"));
+	}
+
+	@Test
+	public void testFindingAllFields()
+	{
+		MetaClass mclass = MetaClass.lookup(Subtype.class, MetaClass.lookup(Float.class), MetaClass.lookup(List.class, String.class));
+		assertEquals("Should be 2", 2, mclass.getFields().size());
+		assertEquals("Should be 1", 1, mclass.getFields(Scope.Instance, Visibility.Private).size());
+	}
+
+	@Test
+	public void testFindingAllMethods()
+	{
+		MetaClass mclass = MetaClass.lookup(Subtype.class, MetaClass.lookup(Float.class), MetaClass.lookup(List.class, String.class));
+		assertEquals("Should be 16", 16, mclass.getMethods().size());
+		assertEquals("Should be 2", 4, mclass.getMethods(Scope.Instance, Visibility.Protected).size());
+	}
+
+	@Test
+	public void testToString()
+	{
+		MetaClass mclass = MetaClass.lookup(Map.class, Integer.class, String.class);
+		assertEquals("java.util.Map<java.lang.Integer, java.lang.String>", mclass.toString());
+	}
+	
+	static abstract class MyList implements List<String>
+	{
+		
+	}
+	
+	@Test
+	public void testInterfaces()
+	{
+		MetaClass mclass = MetaClass.lookup(MyList.class);
+		assertEquals("Should be 1", 1, mclass.getInterfaces().size());
+		assertEquals("Should be List<String>", MetaClass.lookup(List.class, String.class), mclass.getInterfaces().get(0));
+		assertEquals("Should be a List", List.class, mclass.getInterfaces().get(0).getRawClass());
 	}
 }
