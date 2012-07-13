@@ -36,7 +36,7 @@ public abstract class MetaMember
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		MetaField other = (MetaField) obj;
+		MetaMember other = (MetaMember) obj;
 		if (member == null)
 		{
 			if (other.member != null)

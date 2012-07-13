@@ -1,6 +1,7 @@
 package com.yarrumretep.meta;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
@@ -10,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
+
+import com.google.common.collect.Maps;
 
 public class TestMetaClass
 {
@@ -139,19 +142,27 @@ public class TestMetaClass
 	public void testParameterizedMethod()
 	{
 		MetaClass mclass = MetaClass.lookup(Subtype.class, MetaClass.lookup(Float.class), MetaClass.lookup(List.class, String.class));
-
+		Map<MetaMethod, String> map = Maps.newHashMap();
+		
 		MetaMethod mmethod;
 		mmethod = mclass.getMethod("getX");
+		map.put(mmethod, "Fred");
+		assertEquals("Shoudl be same", "Fred", map.get(mmethod));
 		assertNotNull("Should have getX()", mmethod);
 		assertEquals("Should return List<String>", MetaClass.lookup(List.class, String.class), mmethod.getReturnType());
 		assertEquals("Should have no args", Collections.emptyList(), mmethod.getArguments());
 
 		mmethod = mmethod.getReturnType().getMethod("get", int.class);
+		map.put(mmethod, "Bob");
+		assertEquals("Shoudl be same", "Bob", map.get(mmethod));
 		assertNotNull("Should have get()", mmethod);
 		assertEquals("Should return String", MetaClass.lookup(String.class), mmethod.getReturnType());
 		assertEquals("Should have int args", MetaClass.lookupAll(int.class), mmethod.getArguments());
 
 		mmethod = mclass.getMethod("foo", Object.class);
+		map.put(mmethod, "Sally");
+		assertEquals("Shoudl be same", "Sally", map.get(mmethod));
+		assertEquals("Should be same", mmethod.getMetaClass(), mclass);
 		assertNotNull("Should have foo()", mmethod);
 		MetaClass arg = mmethod.getArguments().get(0);
 		assertEquals("Should be List<String>", MetaClass.lookup(List.class, String.class), arg);
@@ -205,5 +216,53 @@ public class TestMetaClass
 		assertEquals("Should be 1", 1, mclass.getInterfaces().size());
 		assertEquals("Should be List<String>", MetaClass.lookup(List.class, String.class), mclass.getInterfaces().get(0));
 		assertEquals("Should be a List", List.class, mclass.getInterfaces().get(0).getRawClass());
+	}
+	
+	@Test
+	public void testHashing()
+	{
+		Map<MetaClass, String> map = Maps.newHashMap();
+		MetaClass it = MetaClass.lookup(Map.class, Integer.class, String.class);
+		map.put(it, "Fred");
+		map.put(MetaClass.lookup(Map.class, Float.class, String.class), "Bob");
+		map.put(MetaClass.lookup(Map.class, Double.class, String.class), "Sally");
+		
+		assertEquals("Got right one", "Fred", map.get(it));
+		assertEquals("Got right one", "Fred", map.get(MetaClass.lookup(Map.class, Integer.class, String.class)));
+		assertEquals("Got right one", "Bob", map.get(MetaClass.lookup(Map.class, Float.class, String.class)));
+		assertEquals("Got right one", "Sally", map.get(MetaClass.lookup(Map.class, Double.class, String.class)));
+	}
+	
+	@Test
+	public void testMetaClassEquals()
+	{
+		MetaClass mc1 = MetaClass.lookup(List.class, String.class);
+		assertEquals("Equals itself", mc1, mc1);
+		
+		MetaClass mc2 = MetaClass.lookup(List.class, String.class);
+		assertEquals("Equals identical", mc1, mc2);
+		
+		assertFalse("Not equals null", mc1.equals(null));
+		assertFalse("Not equals \"Fred\"", mc1.equals("Fred"));
+	}
+	
+	@Test
+	public void testMetaMemberEquals()
+	{
+		MetaMethod mc1 = MetaClass.lookup(List.class, String.class).getMethod("get", int.class);
+		assertEquals("Equals itself", mc1, mc1);
+		
+		MetaMethod mc2 = MetaClass.lookup(List.class, String.class).getMethod("get", int.class);
+		assertEquals("Equals identical", mc1, mc2);
+		
+		assertFalse("Not equals null", mc1.equals(null));
+		assertFalse("Not equals \"Fred\"", mc1.equals("Fred"));
+	}
+	
+	@Test
+	public void testMetaFieldToString()
+	{
+		MetaField mc1 = MetaClass.lookup(Subtype.class, Integer.class, String.class).getField("x");
+		assertEquals("Test string", "final java.lang.String com.yarrumretep.meta.Subtype<java.lang.Integer, java.lang.String>.x", mc1.toString());
 	}
 }
